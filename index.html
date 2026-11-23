@@ -3,32 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MON PETIT GENIE - PYRAMID KIDS</title>
+<title>MON PETIT GENIE</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Comic Sans MS',Arial}
-body{background:#fff7e6;text-align:center;overflow-x:hidden}
-header{background:#ffcf3f;padding:15px}
-header img{width:150px;height:150px;border-radius:50%;object-fit:cover;background:white;border:5px solid #2b3a9e}
-header h1{color:#2b3a9e;font-size:28px;margin-top:5px}
-header p{color:#2b3a9e;font-weight:bold}
-.home{display:grid;grid-template-columns:1fr 1fr;gap:15px;padding:15px;max-width:600px;margin:auto}
-.card{background:white;border-radius:20px;padding:20px;font-size:22px;font-weight:bold;cursor:pointer;box-shadow:0 5px 15px rgba(0,0,0,.1);border:4px solid #ffcf3f}
-.card span{font-size:50px;display:block}
-.game{display:none;position:relative;height:85vh;background:linear-gradient(#87ceeb,#e0f7ff);overflow:hidden}
-.topbar{display:flex;justify-content:space-between;padding:10px}
-.back{background:#2b7cff;color:white;border:none;padding:10px 18px;border-radius:20px;font-size:18px;cursor:pointer}
-.score{font-size:22px;font-weight:bold;color:#ff9800}
-.falling{position:absolute;font-size:55px;cursor:pointer;transition:top .1s;user-select:none}
-.girl{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:70px}
-.basket{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:80px;cursor:grab}
-.shape-row{display:flex;justify-content:space-around;margin-top:30px}
-.shape{font-size:70px;cursor:grab}
-.msg{font-size:40px;font-weight:bold;color:#2ecc71;position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);z-index:10}
-.msg.bad{color:#e74c3c}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial}
+body{background:#fff7e6;text-align:center}
+header{background:#ffcf3f;padding:12px}
+header img{width:140px;height:140px;border-radius:50%;background:white;object-fit:cover}
+header h1{color:#2b3a9e;font-size:26px}
+.home{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px;max-width:500px;margin:auto}
+.card{background:white;border-radius:18px;padding:18px;font-size:20px;font-weight:bold;cursor:pointer;border:4px solid #ffcf3f}
+.card span{font-size:45px;display:block}
+.game{display:none;background:#87ceeb;height:85vh;position:relative;overflow:hidden}
+.topbar{display:flex;justify-content:space-between;padding:10px;background:white}
+.back{background:#2b7cff;color:white;border:none;padding:8px 16px;border-radius:20px;font-size:16px}
+.fruit{position:absolute;font-size:55px;cursor:pointer}
+.girl{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);font-size:70px}
+#msg{font-size:35px;font-weight:bold;color:green;position:absolute;top:40%;left:50%;transform:translate(-50%,-50%)}
 </style>
 </head>
 <body>
-
 <header>
 <img src="logo.png" onerror="this.style.display='none'">
 <h1>MON PETIT GENIE</h1>
@@ -36,76 +29,73 @@ header p{color:#2b3a9e;font-weight:bold}
 </header>
 
 <div id="home" class="home">
-<div class="card" onclick="startGame('fruits')"><span>🍎🍌🍓</span>Fruits<br>الفواكه</div>
-<div class="card" onclick="startGame('numbers')"><span>1️⃣2️⃣3️⃣</span>Numbers<br>الأرقام</div>
-<div class="card" onclick="startGame('letters')"><span>🅰️🅱️©️</span>Letters<br>الحروف</div>
-<div class="card" onclick="startGame('shapes')"><span>⭐❤️🔺</span>Formes<br>الأشكال</div>
+<div class="card" onclick="play('fruits')"><span>🍎🍌🍓</span>Fruits</div>
+<div class="card" onclick="play('numbers')"><span>1️⃣2️⃣3️⃣</span>Numbers</div>
+<div class="card" onclick="play('letters')"><span>🔤</span>Letters</div>
+<div class="card" onclick="play('shapes')"><span>⭐❤️</span>Formes</div>
 </div>
 
 <div id="game" class="game">
-<div class="topbar"><button class="back" onclick="goHome()">← Back</button><div class="score" id="scoreText">Find APPLE! 0/10</div><div>☀️</div></div>
-<div id="playArea" style="position:relative;height:calc(100% - 60px)"></div>
-<div id="msg" class="msg"></div>
+<div class="topbar"><button class="back" onclick="goHome()">← Back</button><b id="targetText">Find APPLE!</b><b id="scoreText">0/10</b></div>
+<div id="area" style="position:relative;width:100%;height:calc(100% - 50px)"></div>
+<div id="msg"></div>
+<div class="girl">👧🏻🧺</div>
 </div>
 
 <script>
-let target='APPLE', score=0, level=1, mode='fruits', interval=null, fallingItems=[];
-const fruits=['🍎','🍌','🍓','🍇','🍉','🍊','🍐'];
-const fruitNames={'🍎':'APPLE','🍌':'BANANA','🍓':'STRAWBERRY','🍇':'GRAPE','🍉':'WATERMELON','🍊':'ORANGE','🍐':'PEAR'};
-const numbers=['1','2','3','4','5','6','7','8','9','10'];
+let mode='fruits', target='APPLE', score=0, timer=null;
+const fruitsMap={'🍎':'APPLE','🍌':'BANANA','🍓':'STRAWBERRY','🍇':'GRAPE','🍉':'WATERMELON','🍊':'ORANGE','🍐':'PEAR'};
+const fruitsList=Object.keys(fruitsMap);
+const nums=['1','2','3','4','5','6','7','8','9','10'];
 const letters=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
-const shapes=[{e:'⬛',n:'Carre'},{e:'❤️',n:'Coeur'},{e:'⭐',n:'Etoile'},{e:'🔴',n:'Rond'},{e:'🔺',n:'Triangle'}];
-let shapeIdx=0;
 
-function goHome(){clearInterval(interval);document.getElementById('game').style.display='none';document.getElementById('home').style.display='grid';}
-function startGame(m){mode=m;score=0;level=1;shapeIdx=0;document.getElementById('home').style.display='none';document.getElementById('game').style.display='block';if(m==='shapes') startShapes(); else startFalling();}
-function showMsg(t,ok){let el=document.getElementById('msg');el.textContent=t;el.className='msg'+(ok?'':' bad');setTimeout(()=>el.textContent='',800);}
-
+function goHome(){clearInterval(timer);document.getElementById('game').style.display='none';document.getElementById('home').style.display='grid';}
+function play(m){
+mode=m;score=0;document.getElementById('home').style.display='none';document.getElementById('game').style.display='block';
+pickTarget(); startFall();
+}
 function pickTarget(){
-if(mode==='fruits'){target=fruits[Math.floor(Math.random()*fruits.length)];target=fruitNames[target];}
-if(mode==='numbers') target=numbers[Math.floor(Math.random()*numbers.length)];
+if(mode==='fruits') target=fruitsMap[fruitsList[Math.floor(Math.random()*fruitsList.length)]];
+if(mode==='numbers') target=nums[Math.floor(Math.random()*nums.length)];
 if(mode==='letters') target=letters[Math.floor(Math.random()*letters.length)];
-updateScore();
+if(mode==='shapes') target='ETOILE';
+document.getElementById('targetText').textContent='Find '+target+' !';
+document.getElementById('scoreText').textContent=score+'/10';
 }
-function updateScore(){
-let label=mode==='fruits'?'Find '+target+'!':mode==='numbers'?'Catch '+target: 'Catch '+target;
-document.getElementById('scoreText').textContent=label+' - '+score+'/10 | Phase Level '+level+'/9';
-}
-function startFalling(){
-pickTarget();
-let area=document.getElementById('playArea');
-area.innerHTML='<div style="font-size:80px">🌳🌳🌳</div><div class="girl">👧🏻🧺</div>';
-clearInterval(interval);
-interval=setInterval(()=>{
-if(fallingItems.length>4) return;
-let el=document.createElement('div');el.className='falling';
-let val='';
-if(mode==='fruits'){let f=fruits[Math.floor(Math.random()*fruits.length)];val=f;el.textContent=f;el.dataset.name=fruitNames[f];}
-if(mode==='numbers'){val=numbers[Math.floor(Math.random()*numbers.length)];el.textContent='🔢 '+val;el.dataset.name=val;el.style.fontSize='45px';}
-if(mode==='letters'){val=letters[Math.floor(Math.random()*letters.length)];el.textContent='🔤 '+val;el.dataset.name=val;el.style.fontSize='45px';}
-el.style.left=Math.random()*80+'%';el.style.top='0px';
-area.appendChild(el);fallingItems.push(el);
+function startFall(){
+clearInterval(timer);
+let area=document.getElementById('area');
+area.innerHTML='';
+timer=setInterval(()=>{
+let el=document.createElement('div');
+el.className='fruit';
+let name='';
+if(mode==='fruits'){let f=fruitsList[Math.floor(Math.random()*fruitsList.length)];el.textContent=f;name=fruitsMap[f];}
+if(mode==='numbers'){let n=nums[Math.floor(Math.random()*nums.length)];el.textContent=n;name=n;el.style.fontSize='50px';el.style.background='white';el.style.borderRadius='50%';el.style.padding='5px 15px';}
+if(mode==='letters'){let l=letters[Math.floor(Math.random()*letters.length)];el.textContent=l;name=l;el.style.fontSize='50px';el.style.background='white';el.style.borderRadius='50%';el.style.padding='5px 15px';}
+if(mode==='shapes'){let s=['⭐','❤️','⬛','🔴','🔺'][Math.floor(Math.random()*5)];el.textContent=s;name=s==='⭐'?'ETOILE':s==='❤️'?'COEUR':'AUTRE';}
+el.style.left=Math.random()*80+'%';
+el.style.top='0px';
+area.appendChild(el);
 let top=0;
-let fall=setInterval(()=>{
-top+=4;el.style.top=top+'px';
-if(top>area.clientHeight-120){clearInterval(fall);el.remove();fallingItems=fallingItems.filter(x=>x!==el);}
-},40);
+let move=setInterval(()=>{
+top+=5; el.style.top=top+'px';
+if(top>500){clearInterval(move); el.remove();}
+},30);
 el.onclick=()=>{
-if(el.dataset.name===target){score++;showMsg('YES! - BRAVO!!',true);if(score>=10){score=0;level++;if(level>9){alert('BRAVO!! Tu as gagné!! 🎉');goHome();return;}}pickTarget();}
-else{showMsg('NO!',false);}
-el.remove();clearInterval(fall);fallingItems=fallingItems.filter(x=>x!==el);
+if(name===target){
+score++; document.getElementById('scoreText').textContent=score+'/10';
+document.getElementById('msg').textContent='YES! BRAVO!! 🎉';
+setTimeout(()=>document.getElementById('msg').textContent='',700);
+if(score>=10){alert('BRAVO!! Tu as gagné!! 🎉'); goHome(); return;}
+pickTarget();
+} else {
+document.getElementById('msg').textContent='NO! Essaie encore';
+setTimeout(()=>document.getElementById('msg').textContent='',700);
+}
+clearInterval(move); el.remove();
 };
-},900);
-}
-function startShapes(){
-let area=document.getElementById('playArea');
-let cur=shapes[shapeIdx];
-area.innerHTML='<h2 style="font-size:35px;color:#2b3a9e;margin-top:10px">'+cur.n+'</h2><div class="shape-row">'+shapes.map(s=>'<div class="shape" data-name="'+s.n+'" onclick="checkShape(\''+s.n+'\')">'+s.e+'</div>').join('')+'</div><div class="basket" id="basket">🧺</div>';
-}
-function checkShape(name){
-let cur=shapes[shapeIdx];
-if(name===cur.n){showMsg('BRAVO!!',true);setTimeout(()=>{shapeIdx++;if(shapeIdx>=shapes.length){alert('BRAVO!! Tu as gagné!! 🎉');goHome();}else startShapes();},900);}
-else showMsg('NO! Essaie encore',false);
+},800);
 }
 </script>
 </body>

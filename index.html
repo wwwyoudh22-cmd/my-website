@@ -1,11 +1,90 @@
 <!DOCTYPE html>
-<html>
-<head>
-<title>MON PETIT GENIE</title>
-</head>
-<body style="text-align:center; background:#FFF8E7; font-family:Arial;">
-<img src="GENIE.png" style="width:300px; margin-top:50px;">
-<h1 style="color:#FF6B35;">MON PETIT GENIE</h1>
-<p>Welcome to PYRAMID Game!</p>
-</body>
-</html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MON PETIT GENIE - PYRAMID KIDS</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{background:#fff;text-align:center;overflow-x:hidden}
+#logoPage{padding:20px}
+#logoPage img{width:92%;max-width:480px;border-radius:20px;cursor:pointer}
+#logoPage h2{margin:10px;color:#4a4aff}
+#logoPage p{color:#888}
+#game{display:none}
+header{background:#bfd9ff;padding:12px;font-size:28px;font-weight:900;color:#333399}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px}
+.card{height:260px;font-size:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border-radius:12px}
+.card span{font-size:22px;font-weight:900;margin-top:10px}
+.screen{display:none;padding:10px;min-height:90vh;position:relative;overflow:hidden}
+.screen.active{display:block}
+.back{position:absolute;top:10px;left:10px;background:#5aa3f0;color:#fff;border:0;padding:10px 16px;border-radius:20px;font-weight:900;z-index:10}
+h1{font-size:30px;margin:30px 0 5px}
+.score{font-size:18px}
+#playArea{position:relative;height:65vh;background:#e8f5ff;border-radius:15px;overflow:hidden;margin-top:10px}
+.fall{position:absolute;font-size:55px;cursor:pointer;user-select:none}
+#basket{position:absolute;bottom:5px;left:40%;font-size:70px}
+#msg{font-size:45px;font-weight:900;height:60px}
+#shapeArea{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.shape{font-size:70px;cursor:grab;background:#fff;border-radius:15px;padding:10px}
+#targetShape{font-size:90px;margin:15px}
+button.big{background:#2ecc71;color:#fff;border:0;padding:14px 25px;border-radius:25px;font-size:20px;font-weight:900;margin:10px}
+</style></head>
+<body>
+
+<div id="logoPage">
+<img src="https://via.placeholder.com/600x600.png?text=MON+PETIT+GENIE" onclick="enterGame()" id="logoImg">
+<h2>MON PETIT GENIE</h2>
+<p>Welcome to our educational world!</p>
+<p><b>👆 كبسي على اللوغو لتدخلي على اللعبة</b></p>
+</div>
+
+<div id="game">
+<header>PYRAMID KIDS</header>
+<div id="home" class="screen active">
+<div class="grid">
+<div class="card" style="background:#ff9999" onclick="openGame('fruits')">🍎<span>FRUITS</span></div>
+<div class="card" style="background:#80b3ff" onclick="openGame('numbers')">🔢<span>NUMBERS</span></div>
+<div class="card" style="background:#99ff99" onclick="openGame('letters')">🔤<span>LETTERS</span></div>
+<div class="card" style="background:#ffff99" onclick="openGame('shapes')">⭐<span>SHAPES</span></div>
+</div>
+</div>
+
+<div id="fruits" class="screen"><button class="back" onclick="goHome()">← Back</button><h1 id="fruitTitle"></h1><div class="score" id="fruitScore"></div><div id="msg"></div><div id="playArea"><div id="basket">🧺</div></div></div>
+<div id="numbers" class="screen"><button class="back" onclick="goHome()">← Back</button><h1 id="numTitle"></h1><div class="score" id="numScore"></div><div id="msg2"></div><div id="playArea2"><div id="basket2">🧒</div></div></div>
+<div id="letters" class="screen"><button class="back" onclick="goHome()">← Back</button><h1 id="letTitle"></h1><div class="score" id="letScore"></div><div id="msg3"></div><div id="playArea3"><div id="basket3">🧒</div></div></div>
+<div id="shapes" class="screen"><button class="back" onclick="goHome()">← Back</button><h1 id="shapeTitle"></h1><p>اسحبي الشكل الصح على السلة!</p><div id="targetShape"></div><div id="shapeArea"></div><div id="msg4"></div><div style="font-size:80px">🧺</div></div>
+</div>
+
+<script>
+let logoUrl = "";
+// حاولي تجيبي اللوغو القديم اذا موجود
+fetch('logo.png').then(r=>{if(r.ok) document.getElementById('logoImg').src='logo.png'});
+
+function enterGame(){document.getElementById('logoPage').style.display='none';document.getElementById('game').style.display='block';}
+function goHome(){stopAll();document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('home').classList.add('active');}
+function openGame(id){stopAll();document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');if(id=='fruits') startFruits(); if(id=='numbers') startNumbers(); if(id=='letters') startLetters(); if(id=='shapes') startShapes();}
+let timer=null;
+function stopAll(){clearInterval(timer);document.querySelectorAll('.fall').forEach(e=>e.remove());}
+
+const FRUITS=[['Apple','🍎'],['Banana','🍌'],['Cherry','🍒'],['Grape','🍇'],['Lemon','🍋'],['Orange','🍊'],['Pineapple','🍍'],['Strawberry','🍓'],['Watermelon','🍉']];
+let fIdx=0, fGot=0, fTarget=null;
+function startFruits(){fIdx=0;fGot=0;nextFruit();}
+function nextFruit(){if(fIdx>=FRUITS.length){document.getElementById('fruitTitle').innerText='Felicitations! Tu as gagne! 🎉';return;} fTarget=FRUITS[fIdx]; fGot=0; updateFruit(); spawnLoop('playArea','fruit',FRUITS);}
+function updateFruit(){document.getElementById('fruitTitle').innerText='Find '+fTarget[0].toUpperCase()+'! - '+fGot+'/10'; document.getElementById('fruitScore').innerText='Level '+(fIdx+1)+'/'+FRUITS.length;}
+function spawnLoop(areaId,type,list){clearInterval(timer); timer=setInterval(()=>{ let isTarget=Math.random()<0.7; let item=isTarget? (type=='fruit'?fTarget:type=='num'?[nTarget,String(nTarget)]:[lTarget,lTarget]) : list[Math.floor(Math.random()*list.length)]; if(item[0]===(type=='fruit'?fTarget[0]:type=='num'?nTarget:lTarget) && !isTarget) return; let el=document.createElement('div'); el.className='fall'; el.innerText=item[1]; el.style.left=Math.random()*80+'%'; el.style.top='0px'; el.dataset.val=item[0]; el.onclick=()=>checkHit(el,type); document.getElementById(areaId).appendChild(el); let y=0; let mv=setInterval(()=>{y+=4; el.style.top=y+'px'; if(y>document.getElementById(areaId).offsetHeight-100){clearInterval(mv); el.remove();}},30); },900);}
+
+function checkHit(el,type){ let msgId=type=='fruit'?'msg':type=='num'?'msg2':'msg3'; let val=el.dataset.val; let target=type=='fruit'?fTarget[0]:type=='num'?String(nTarget):lTarget; if(String(val)==String(target)){ el.remove(); if(type=='fruit'){fGot++; updateFruit(); if(fGot>=10){document.getElementById(msgId).innerText='BRAVO!'; document.getElementById(msgId).style.color='green'; setTimeout(()=>{document.getElementById(msgId).innerText=''; fIdx++; nextFruit();},1200);}} else if(type=='num'){nGot++; updateNum(); if(nGot>=10){document.getElementById(msgId).innerText='BRAVO!'; setTimeout(()=>{document.getElementById(msgId).innerText=''; nTarget++; if(nTarget>10){document.getElementById('numTitle').innerText='YOU WIN! 🎉';} else nextNum();},1200);}} else {lGot++; updateLet(); if(lGot>=10){document.getElementById(msgId).innerText='BRAVO!'; setTimeout(()=>{document.getElementById(msgId).innerText=''; lIdx++; nextLet();},1200);}} } else { document.getElementById(msgId).innerText='NO!'; document.getElementById(msgId).style.color='red'; setTimeout(()=>document.getElementById(msgId).innerText='',800); el.remove(); } }
+
+let nTarget=1,nGot=0;
+function startNumbers(){nTarget=1;nGot=0;nextNum();}
+function nextNum(){nGot=0; updateNum(); spawnLoop('playArea2','num',[[1,'1'],[2,'2'],[3,'3'],[4,'4'],[5,'5'],[6,'6'],[7,'7'],[8,'8'],[9,'9'],[10,'🔟']]);}
+function updateNum(){document.getElementById('numTitle').innerText='Catch '+nTarget+' : '+nGot+'/10';}
+let LETTERS=['A','B','C','D','E','F','G','H','I','J']; let lIdx=0,lTarget='A',lGot=0;
+function startLetters(){lIdx=0;nextLet();}
+function nextLet(){if(lIdx>=LETTERS.length){document.getElementById('letTitle').innerText='YOU WIN! 🎉';return;} lTarget=LETTERS[lIdx]; lGot=0; updateLet(); spawnLoop('playArea3','let',LETTERS.map(l=>[l,l]));}
+function updateLet(){document.getElementById('letTitle').innerText='Catch '+lTarget+' '+lGot+'/10';}
+
+let SHAPES=[['Carre','🟦'],['Coeur','❤️'],['Etoile','⭐'],['Lozange','🔶'],['Rectangle','▭'],['Rond','🔴'],['Triangle','🔺']]; let sIdx=0;
+function startShapes(){sIdx=0; nextShape();}
+function nextShape(){if(sIdx>=SHAPES.length){document.getElementById('shapeTitle').innerText='Felicitations! Tu as gagne! 🎉'; document.getElementById('targetShape').innerText=''; document.getElementById('shapeArea').innerHTML=''; return;} let cur=SHAPES[sIdx]; document.getElementById('shapeTitle').innerText=cur[0]; document.getElementById('targetShape').innerText=cur[1]; let opts=[...SHAPES].sort(()=>Math.random()-0.5).slice(0,4); if(!opts.find(o=>o[0]==cur[0])) opts[0]=cur; document.getElementById('shapeArea').innerHTML=''; opts.forEach(o=>{let d=document.createElement('div'); d.className='shape'; d.innerText=o[1]; d.onclick=()=>{if(o[0]==cur[0]){document.getElementById('msg4').innerText='BRAVO!!'; document.getElementById('msg4').style.color='green'; setTimeout(()=>{document.getElementById('msg4').innerText=''; sIdx++; nextShape();},1000);} else {document.getElementById('msg4').innerText='Non'; document.getElementById('msg4').style.color='red';}}; document.getElementById('shapeArea').appendChild(d);});}
+</script>
+</body></html>
